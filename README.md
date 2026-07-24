@@ -105,6 +105,38 @@ pnpm dev
 | `/login`, `/register` | Auth shells |
 | `/field`, `/ngo`, `/verifier`, `/admin`, `/buyer`, `/super` | Role dashboards |
 
+## Phase 2 — Authentication
+
+JWT-based auth with bcrypt password hashing, role-based access, and Prisma/PostgreSQL persistence.
+
+### API endpoints (`http://localhost:4000/v1/auth`)
+
+| Method | Route | Auth | Body |
+|--------|-------|------|------|
+| POST | `/register` | public | `{ name, email, password, role? }` |
+| POST | `/login` | public | `{ email, password }` |
+| GET | `/me` | Bearer token | — |
+
+`register` and `login` return `{ token, user }`. Send the token as `Authorization: Bearer <token>` on protected routes.
+
+Roles (from the `Role` enum): `SUPER_ADMIN`, `NCCR_ADMIN` (Government), `NGO_MANAGER` (NGO), `FIELD_WORKER` (Field Officer), `VERIFIER`, `CORPORATE_BUYER` (Buyer). Guard routes with the `authorize(...roles)` middleware after `authenticate`.
+
+### Database migration
+
+```bash
+# Prisma reads DATABASE_URL from apps/api/.env (or export it inline).
+cp .env apps/api/.env        # or set DATABASE_URL for the api workspace
+pnpm --filter @bluechain/api exec prisma migrate deploy   # apply existing migrations
+# For local dev iterations:
+pnpm db:migrate              # prisma migrate dev
+```
+
+The initial migration lives at `apps/api/prisma/migrations/`.
+
+### Frontend
+
+`/login` and `/register` are wired to the API via `lib/auth-context.tsx`. On success the JWT is stored client-side and the user is redirected to their role dashboard (`/super`, `/admin`, `/ngo`, `/field`, `/verifier`, `/buyer`).
+
 ## Phase 1 scope
 
 Foundation only: structure, design system, themes, layouts, routing, Docker/env, Prisma schema, API health, AI stubs, Solidity placeholders.

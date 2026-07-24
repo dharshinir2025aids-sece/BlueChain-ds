@@ -1,7 +1,7 @@
-import { Router } from "express";
+import { Router, type Router as RouterType } from "express";
 import type { HealthStatus } from "@bluechain/shared";
 
-export const healthRouter = Router();
+export const healthRouter: RouterType = Router();
 
 healthRouter.get("/", (_req, res) => {
   const payload: HealthStatus = {
