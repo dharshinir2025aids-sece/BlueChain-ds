@@ -114,14 +114,31 @@ export interface LoginInput {
   password: string;
 }
 
-/** Roles a user may self-register with from the public registration form. */
+/**
+ * Roles a user may self-register with from the public registration form.
+ * Higher-privilege roles (SUPER_ADMIN, NCCR_ADMIN/Government, VERIFIER) are
+ * intentionally excluded — they can only be created by an existing SUPER_ADMIN.
+ */
 export const SELECTABLE_ROLES: Role[] = [
-  Role.NCCR_ADMIN,
   Role.NGO_MANAGER,
-  Role.FIELD_WORKER,
-  Role.VERIFIER,
   Role.CORPORATE_BUYER,
+  Role.FIELD_WORKER,
+];
+
+/**
+ * Roles that require elevated privileges and can only be assigned by an
+ * existing SUPER_ADMIN (never through public self-registration).
+ */
+export const PRIVILEGED_ROLES: Role[] = [
   Role.SUPER_ADMIN,
+  Role.NCCR_ADMIN,
+  Role.VERIFIER,
+];
+
+/** Every role a SUPER_ADMIN may assign when creating a user (excludes PUBLIC). */
+export const ASSIGNABLE_ROLES: Role[] = [
+  ...SELECTABLE_ROLES,
+  ...PRIVILEGED_ROLES,
 ];
 
 /** Human-friendly labels for roles. */

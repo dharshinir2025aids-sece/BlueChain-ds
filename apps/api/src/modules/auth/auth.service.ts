@@ -1,10 +1,19 @@
 import type { Prisma, User } from "@prisma/client";
-import { Role, type AuthResult, type AuthUser } from "@bluechain/shared";
+import {
+  PRIVILEGED_ROLES,
+  Role,
+  type AuthResult,
+  type AuthUser,
+} from "@bluechain/shared";
 import { prisma } from "../../config/prisma";
 import { hashPassword, verifyPassword } from "../../lib/password";
 import { signToken } from "../../lib/jwt";
 import { AppError } from "../../middleware/errorHandler";
-import type { LoginBody, RegisterBody } from "./auth.validation";
+import type {
+  AdminCreateUserBody,
+  LoginBody,
+  RegisterBody,
+} from "./auth.validation";
 
 function toAuthUser(user: User): AuthUser {
   return {
@@ -29,7 +38,12 @@ function issue(user: User): AuthResult {
   return { token, user: toAuthUser(user) };
 }
 
-export async function register(input: RegisterBody): Promise<AuthResult> {
+async function createUser(input: {
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+}): Promise<User> {
   const existing = await prisma.user.findUnique({
     where: { email: input.email },
   });
@@ -39,16 +53,37 @@ export async function register(input: RegisterBody): Promise<AuthResult> {
 
   const passwordHash = await hashPassword(input.password);
 
-  const user = await prisma.user.create({
+  return prisma.user.create({
     data: {
       name: input.name,
       email: input.email,
       passwordHash,
-      role: (input.role ?? Role.FIELD_WORKER) as Prisma.UserCreateInput["role"],
+      role: input.role as Prisma.UserCreateInput["role"],
     },
   });
+}
 
+/** Public self-registration. Privileged roles are never allowed here. */
+export async function register(input: RegisterBody): Promise<AuthResult> {
+  const role = (input.role ?? Role.FIELD_WORKER) as Role;
+  if (PRIVILEGED_ROLES.includes(role)) {
+    throw new AppError(
+      403,
+      "ROLE_NOT_ALLOWED",
+      "This role can only be assigned by an administrator",
+    );
+  }
+
+  const user = await createUser({ ...input, role });
   return issue(user);
+}
+
+/** SUPER_ADMIN-only user creation. Allows any assignable role. */
+export async function adminCreateUser(
+  input: AdminCreateUserBody,
+): Promise<AuthUser> {
+  const user = await createUser({ ...input, role: input.role as Role });
+  return toAuthUser(user);
 }
 
 export async function login(input: LoginBody): Promise<AuthResult> {

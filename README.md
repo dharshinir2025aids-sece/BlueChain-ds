@@ -116,10 +116,20 @@ JWT-based auth with bcrypt password hashing, role-based access, and Prisma/Postg
 | POST | `/register` | public | `{ name, email, password, role? }` |
 | POST | `/login` | public | `{ email, password }` |
 | GET | `/me` | Bearer token | — |
+| POST | `/users` | Bearer token, `SUPER_ADMIN` | `{ name, email, password, role }` |
 
-`register` and `login` return `{ token, user }`. Send the token as `Authorization: Bearer <token>` on protected routes.
+`register` and `login` return `{ token, user }`; `/me` and `/users` return the user object. Send the token as `Authorization: Bearer <token>` on protected routes. A missing, malformed, or expired token yields `401`; an authenticated user without the required role yields `403`.
 
-Roles (from the `Role` enum): `SUPER_ADMIN`, `NCCR_ADMIN` (Government), `NGO_MANAGER` (NGO), `FIELD_WORKER` (Field Officer), `VERIFIER`, `CORPORATE_BUYER` (Buyer). Guard routes with the `authorize(...roles)` middleware after `authenticate`.
+### Roles & registration policy
+
+Roles (from the `Role` enum): `SUPER_ADMIN`, `NCCR_ADMIN` (Government), `NGO_MANAGER` (NGO), `FIELD_WORKER` (Field Officer), `VERIFIER`, `CORPORATE_BUYER` (Buyer).
+
+- **Public self-registration** (`POST /register`, and the `/register` UI) is limited to non-privileged roles: **NGO (`NGO_MANAGER`), Buyer (`CORPORATE_BUYER`), Field Officer (`FIELD_WORKER`)** — see `SELECTABLE_ROLES` in `@bluechain/shared`. Requesting any other role returns `403 ROLE_NOT_ALLOWED`.
+- **Privileged roles** — `SUPER_ADMIN`, `NCCR_ADMIN` (Government), `VERIFIER` (`PRIVILEGED_ROLES`) — can only be created by an existing `SUPER_ADMIN` via `POST /v1/auth/users`.
+
+Guard additional routes with `authenticate` followed by `authorize(...roles)`.
+
+> **Bootstrapping the first SUPER_ADMIN:** since only a SUPER_ADMIN can create privileged users, seed the first one directly (e.g. `pnpm --filter @bluechain/api exec prisma studio` and set a user's `role` to `SUPER_ADMIN`, or an insert with a bcrypt hash). That account can then create other privileged users through `POST /v1/auth/users`.
 
 ### Database migration
 
