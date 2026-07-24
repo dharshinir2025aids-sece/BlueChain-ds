@@ -77,5 +77,95 @@ export interface HealthStatus {
   timestamp: string;
 }
 
+export enum KycStatus {
+  NONE = "NONE",
+  PENDING = "PENDING",
+  VERIFIED = "VERIFIED",
+  REJECTED = "REJECTED",
+}
+
+/** Authenticated user shape returned by the API (never includes the password hash). */
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  orgId: string | null;
+  walletAddress: string | null;
+  kycStatus: KycStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuthResult {
+  token: string;
+  user: AuthUser;
+}
+
+export interface RegisterInput {
+  name: string;
+  email: string;
+  password: string;
+  role?: Role;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+/**
+ * Roles a user may self-register with from the public registration form.
+ * Higher-privilege roles (SUPER_ADMIN, NCCR_ADMIN/Government, VERIFIER) are
+ * intentionally excluded — they can only be created by an existing SUPER_ADMIN.
+ */
+export const SELECTABLE_ROLES: Role[] = [
+  Role.NGO_MANAGER,
+  Role.CORPORATE_BUYER,
+  Role.FIELD_WORKER,
+];
+
+/**
+ * Roles that require elevated privileges and can only be assigned by an
+ * existing SUPER_ADMIN (never through public self-registration).
+ */
+export const PRIVILEGED_ROLES: Role[] = [
+  Role.SUPER_ADMIN,
+  Role.NCCR_ADMIN,
+  Role.VERIFIER,
+];
+
+/** Every role a SUPER_ADMIN may assign when creating a user (excludes PUBLIC). */
+export const ASSIGNABLE_ROLES: Role[] = [
+  ...SELECTABLE_ROLES,
+  ...PRIVILEGED_ROLES,
+];
+
+/** Human-friendly labels for roles. */
+export const ROLE_LABELS: Record<Role, string> = {
+  [Role.SUPER_ADMIN]: "Super Admin",
+  [Role.NCCR_ADMIN]: "Government (NCCR)",
+  [Role.NGO_MANAGER]: "NGO",
+  [Role.FIELD_WORKER]: "Field Officer",
+  [Role.VERIFIER]: "Verifier",
+  [Role.CORPORATE_BUYER]: "Buyer",
+  [Role.PUBLIC]: "Public",
+};
+
+/** Landing route for each role after login. */
+export const ROLE_HOME: Record<Role, string> = {
+  [Role.SUPER_ADMIN]: "/super",
+  [Role.NCCR_ADMIN]: "/admin",
+  [Role.NGO_MANAGER]: "/ngo",
+  [Role.FIELD_WORKER]: "/field",
+  [Role.VERIFIER]: "/verifier",
+  [Role.CORPORATE_BUYER]: "/buyer",
+  [Role.PUBLIC]: "/",
+};
+
+export function roleHome(role: Role): string {
+  return ROLE_HOME[role] ?? "/";
+}
+
 export const APP_NAME = "BlueChain MRV";
 export const APP_TAGLINE = "Blue Carbon Registry & MRV";
