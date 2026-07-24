@@ -1,0 +1,347 @@
+// BlueChain MRV — Prisma schema (Phase 1 foundation)
+// Business workflows will be wired in later phases.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  NCCR_ADMIN
+  NGO_MANAGER
+  FIELD_WORKER
+  VERIFIER
+  CORPORATE_BUYER
+  PUBLIC
+}
+
+enum ProjectStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  ACTIVE
+  CLOSED
+  SUSPENDED
+}
+
+enum EcosystemType {
+  MANGROVE
+  SEAGRASS
+  SALT_MARSH
+}
+
+enum ReportStatus {
+  DRAFT
+  SUBMITTED
+  IN_VERIFICATION
+  APPROVED
+  REJECTED
+  CHANGES_REQUESTED
+}
+
+enum VerificationDecision {
+  PENDING
+  APPROVED
+  REJECTED
+  CHANGES_REQUESTED
+}
+
+enum CreditStatus {
+  PENDING
+  MINTED
+  TRANSFERRED
+  RETIRED
+}
+
+enum ObservationType {
+  BIOMASS
+  WATER_QUALITY
+  PHOTO_SURVEY
+  SENSOR_READING
+  GENERAL
+}
+
+enum OrgType {
+  NGO
+  GOV
+  CORP
+  COMMUNITY
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  role          Role      @default(FIELD_WORKER)
+  orgId         String?
+  walletAddress String?   @unique
+  kycStatus     KycStatus @default(NONE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  organization Organization? @relation(fields: [orgId], references: [id])
+  observations Observation[]
+  reports      MonitoringReport[]
+  notifications Notification[]
+  auditLogs    AuditLog[]
+  ownedCredits CarbonCredit[] @relation("CreditOwner")
+  transfersFrom CreditTransfer[] @relation("TransferFrom")
+  transfersTo   CreditTransfer[] @relation("TransferTo")
+  retirements   Retirement[]
+  verifications VerificationPackage[]
+
+  @@index([role])
+  @@index([orgId])
+}
+
+model Organization {
+  id             String   @id @default(cuid())
+  name           String
+  type           OrgType
+  registrationNo String?
+  state          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  users    User[]
+  projects Project[]
+}
+
+model Project {
+  id              String         @id @default(cuid())
+  orgId           String
+  title           String
+  description     String?
+  ecosystemType   EcosystemType
+  status          ProjectStatus  @default(DRAFT)
+  methodology     String?
+  areaHa          Float          @default(0)
+  boundaryGeoJson Json?
+  startDate       DateTime?
+  stateCode       String?
+  createdById     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  organization Organization        @relation(fields: [orgId], references: [id])
+  plots        Plot[]
+  reports      MonitoringReport[]
+  credits      CarbonCredit[]
+
+  @@index([status])
+  @@index([orgId])
+  @@index([ecosystemType])
+  @@index([stateCode])
+}
+
+model Plot {
+  id             String   @id @default(cuid())
+  projectId      String
+  name           String
+  centroidLat    Float?
+  centroidLng    Float?
+  areaHa         Float    @default(0)
+  geometryGeoJson Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  observations Observation[]
+
+  @@index([projectId])
+}
+
+model Observation {
+  id          String          @id @default(cuid())
+  plotId      String
+  workerId    String
+  type        ObservationType @default(GENERAL)
+  observedAt  DateTime        @default(now())
+  metricsJson Json?
+  notes       String?
+  gpsLat      Float?
+  gpsLng      Float?
+  aiScore     Float?
+  aiFlagsJson Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  plot    Plot         @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  worker  User         @relation(fields: [workerId], references: [id])
+  media   MediaAsset[]
+
+  @@index([plotId])
+  @@index([workerId])
+}
+
+model MediaAsset {
+  id            String   @id @default(cuid())
+  observationId String?
+  reportId      String?
+  cid           String
+  mime          String
+  size          Int
+  sha256        String?
+  capturedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  observation Observation?      @relation(fields: [observationId], references: [id], onDelete: SetNull)
+  report      MonitoringReport? @relation(fields: [reportId], references: [id], onDelete: SetNull)
+
+  @@index([observationId])
+  @@index([reportId])
+  @@index([cid])
+}
+
+model MonitoringReport {
+  id          String       @id @default(cuid())
+  projectId   String
+  periodStart DateTime
+  periodEnd   DateTime
+  status      ReportStatus @default(DRAFT)
+  summaryJson Json?
+  ipfsCid     String?
+  contentHash String?
+  submittedBy String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  project      Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  submitter    User                  @relation(fields: [submittedBy], references: [id])
+  media        MediaAsset[]
+  verification VerificationPackage?
+
+  @@index([projectId])
+  @@index([status])
+}
+
+model VerificationPackage {
+  id           String                @id @default(cuid())
+  reportId     String                @unique
+  verifierId   String?
+  status       VerificationDecision  @default(PENDING)
+  checklistJson Json?
+  decision     VerificationDecision?
+  comments     String?
+  decidedAt    DateTime?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  report   MonitoringReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  verifier User?            @relation(fields: [verifierId], references: [id])
+
+  @@index([status])
+  @@index([verifierId])
+}
+
+model CarbonCredit {
+  id           String       @id @default(cuid())
+  projectId    String
+  tokenId      String?      @unique
+  amounttCO2e  Float
+  vintageYear  Int
+  status       CreditStatus @default(PENDING)
+  ownerUserId  String?
+  txMint       String?
+  txRetire     String?
+  ipfsCid      String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  project     Project          @relation(fields: [projectId], references: [id])
+  owner       User?            @relation("CreditOwner", fields: [ownerUserId], references: [id])
+  transfers   CreditTransfer[]
+  retirement  Retirement?
+
+  @@index([projectId])
+  @@index([status])
+  @@index([ownerUserId])
+}
+
+model ChainAnchor {
+  id          String   @id @default(cuid())
+  entityType  String
+  entityId    String
+  contentHash String
+  ipfsCid     String?
+  txHash      String?
+  blockNumber Int?
+  network     String   @default("polygon-amoy")
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([txHash])
+}
+
+model CreditTransfer {
+  id         String   @id @default(cuid())
+  creditId   String
+  fromUserId String
+  toUserId   String
+  txHash     String?
+  amount     Float
+  createdAt  DateTime @default(now())
+
+  credit   CarbonCredit @relation(fields: [creditId], references: [id])
+  fromUser User         @relation("TransferFrom", fields: [fromUserId], references: [id])
+  toUser   User         @relation("TransferTo", fields: [toUserId], references: [id])
+
+  @@index([creditId])
+}
+
+model Retirement {
+  id            String   @id @default(cuid())
+  creditId      String   @unique
+  buyerId       String
+  reason        String?
+  certificateId String   @unique @default(cuid())
+  txHash        String?
+  retiredAt     DateTime @default(now())
+
+  credit CarbonCredit @relation(fields: [creditId], references: [id])
+  buyer  User         @relation(fields: [buyerId], references: [id])
+
+  @@index([buyerId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  payloadJson Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  metaJson   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+}

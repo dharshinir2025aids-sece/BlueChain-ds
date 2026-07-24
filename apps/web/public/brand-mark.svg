@@ -1,0 +1,6 @@
+# svg placeholder mark for PWA / favicon usage later
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="16" fill="#256B85"/>
+  <text x="32" y="40" text-anchor="middle" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#F5FBFD">BC</text>
+  <circle cx="48" cy="48" r="6" fill="#1FB894"/>
+</svg>

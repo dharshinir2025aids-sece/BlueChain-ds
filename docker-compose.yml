@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bluechain-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bluechain}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bluechain}
+      POSTGRES_DB: ${POSTGRES_DB:-bluechain_mrv}
+    volumes:
+      - bluechain_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bluechain} -d ${POSTGRES_DB:-bluechain_mrv}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: bluechain-api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://bluechain:bluechain@postgres:5432/bluechain_mrv?schema=public
+      API_PORT: 4000
+      CORS_ORIGIN: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  ai:
+    build:
+      context: ./apps/ai
+      dockerfile: Dockerfile
+    container_name: bluechain-ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      AI_HOST: 0.0.0.0
+      AI_PORT: 8000
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: bluechain-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/v1
+      NEXT_PUBLIC_AI_URL: http://localhost:8000
+    depends_on:
+      - api
+      - ai
+
+volumes:
+  bluechain_pgdata:

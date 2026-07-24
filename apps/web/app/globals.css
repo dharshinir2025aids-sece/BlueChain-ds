@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 211 70% 42%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 30% 96%;
+    --secondary-foreground: 222 30% 20%;
+    --muted: 210 25% 96%;
+    --muted-foreground: 215 16% 42%;
+    --accent: 160 45% 38%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 24% 90%;
+    --input: 214 24% 90%;
+    --ring: 211 70% 42%;
+    --radius: 1rem;
+    --glass: 0 0% 100% / 0.72;
+    --glass-border: 214 24% 88% / 0.8;
+    /* Local system stack — no Google Fonts download required */
+    --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+    --card: 222 40% 9%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 40% 9%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 211 80% 58%;
+    --primary-foreground: 222 47% 8%;
+    --secondary: 217 28% 14%;
+    --secondary-foreground: 210 30% 92%;
+    --muted: 217 28% 12%;
+    --muted-foreground: 215 16% 62%;
+    --accent: 160 42% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 217 24% 16%;
+    --input: 217 24% 16%;
+    --ring: 211 80% 58%;
+    --glass: 222 40% 10% / 0.72;
+    --glass-border: 217 24% 22% / 0.7;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    min-height: 100vh;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply tracking-tight text-foreground;
+    letter-spacing: -0.025em;
+  }
+
+  ::selection {
+    @apply bg-primary/15 text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .surface-gradient {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, hsl(211 80% 60% / 0.14), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, hsl(160 50% 45% / 0.08), transparent),
+      radial-gradient(ellipse 50% 30% at 0% 40%, hsl(211 70% 50% / 0.06), transparent);
+  }
+
+  .dark .surface-gradient {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, hsl(211 80% 50% / 0.22), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, hsl(160 40% 35% / 0.12), transparent),
+      radial-gradient(ellipse 50% 30% at 0% 40%, hsl(211 60% 40% / 0.1), transparent);
+  }
+
+  .glass {
+    background: hsl(var(--glass));
+    border: 1px solid hsl(var(--glass-border));
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  }
+
+  .glass-panel {
+    @apply glass rounded-2xl shadow-soft;
+  }
+
+  .shadow-soft {
+    box-shadow:
+      0 1px 2px hsl(222 47% 11% / 0.04),
+      0 8px 24px hsl(222 47% 11% / 0.04);
+  }
+
+  .dark .shadow-soft {
+    box-shadow:
+      0 1px 2px hsl(0 0% 0% / 0.2),
+      0 8px 24px hsl(0 0% 0% / 0.25);
+  }
+
+  .hover-lift {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-0.5;
+    box-shadow:
+      0 4px 12px hsl(222 47% 11% / 0.06),
+      0 12px 32px hsl(222 47% 11% / 0.06);
+  }
+
+  .dark .hover-lift:hover {
+    box-shadow:
+      0 4px 12px hsl(0 0% 0% / 0.3),
+      0 12px 32px hsl(0 0% 0% / 0.35);
+  }
+
+  .section-pad {
+    @apply py-20 sm:py-24 lg:py-28;
+  }
+
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.14em] text-primary;
+  }
+}
