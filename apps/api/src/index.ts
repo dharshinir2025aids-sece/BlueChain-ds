@@ -9,6 +9,7 @@ import { notFoundHandler } from "./middleware/notFound";
 import { healthRouter } from "./modules/health/health.router";
 import { authRouter } from "./modules/auth/auth.router";
 import { projectRouter } from "./modules/project/project.router";
+import { plotRouter } from "./modules/plot/plot.router";
 
 const app: Express = express();
 
@@ -36,6 +37,7 @@ app.get("/", (_req, res) => {
 app.use("/v1/health", healthRouter);
 app.use("/v1/auth", authRouter);
 app.use("/v1/projects", projectRouter);
+app.use("/v1/plots", plotRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
