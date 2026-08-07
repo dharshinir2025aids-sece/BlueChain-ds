@@ -11,6 +11,7 @@ import { authRouter } from "./modules/auth/auth.router";
 import { projectRouter } from "./modules/project/project.router";
 import { plotRouter } from "./modules/plot/plot.router";
 import { observationRouter } from "./modules/observation/observation.router";
+import { monitoringReportRouter } from "./modules/monitoring-report/monitoringReport.router";
 
 const app: Express = express();
 
@@ -40,6 +41,7 @@ app.use("/v1/auth", authRouter);
 app.use("/v1/projects", projectRouter);
 app.use("/v1/plots", plotRouter);
 app.use("/v1/observations", observationRouter);
+app.use("/v1/monitoring-reports", monitoringReportRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
