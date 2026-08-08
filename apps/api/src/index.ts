@@ -13,6 +13,7 @@ import { plotRouter } from "./modules/plot/plot.router";
 import { observationRouter } from "./modules/observation/observation.router";
 import { monitoringReportRouter } from "./modules/monitoring-report/monitoringReport.router";
 import { blockchainRouter } from "./modules/blockchain/blockchain.router";
+import { marketplaceRouter } from "./modules/marketplace/marketplace.router";
 
 const app: Express = express();
 
@@ -44,6 +45,7 @@ app.use("/v1/plots", plotRouter);
 app.use("/v1/observations", observationRouter);
 app.use("/v1/monitoring-reports", monitoringReportRouter);
 app.use("/v1/blockchain", blockchainRouter);
+app.use("/v1/marketplace", marketplaceRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

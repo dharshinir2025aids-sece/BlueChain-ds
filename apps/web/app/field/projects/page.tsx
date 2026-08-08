@@ -7,8 +7,14 @@ export const metadata = { title: "Field Projects" };
 export default function FieldProjectsPage() {
   return (
     <DashboardShell title="Field Workspace" roleLabel="Field Worker" nav={fieldNav}>
-      <PageHeader title="Assigned projects" description="Projects linked to your field assignments." />
-      <PlaceholderPanel title="Project list" description="Assigned project cards will render here." />
+      <PageHeader
+        title="Assigned projects"
+        description="Projects and plots assigned to you for monitoring and observation."
+      />
+      <PlaceholderPanel
+        title="Project list"
+        description="Your assigned projects with plot counts and pending observation tasks."
+      />
     </DashboardShell>
   );
 }

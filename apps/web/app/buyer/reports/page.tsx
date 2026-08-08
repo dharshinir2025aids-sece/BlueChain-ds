@@ -7,8 +7,14 @@ export const metadata = { title: "ESG Reports" };
 export default function BuyerReportsPage() {
   return (
     <DashboardShell title="Buyer Portal" roleLabel="Corporate Buyer" nav={buyerNav}>
-      <PageHeader title="ESG reports" description="Retirement certificates and exports." />
-      <PlaceholderPanel title="Certificates" description="Downloadable retirement proofs." />
+      <PageHeader
+        title="ESG reports"
+        description="Retirement certificates and downloadable ESG impact summaries."
+      />
+      <PlaceholderPanel
+        title="Certificates"
+        description="Downloadable PDF retirement certificates with on-chain proof links."
+      />
     </DashboardShell>
   );
 }

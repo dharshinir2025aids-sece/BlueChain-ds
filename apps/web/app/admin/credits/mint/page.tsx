@@ -7,8 +7,14 @@ export const metadata = { title: "Mint console" };
 export default function AdminMintPage() {
   return (
     <DashboardShell title="National Registry" roleLabel="NCCR Admin" nav={adminNav}>
-      <PageHeader title="Mint console" description="On-chain mint UI arrives in Phase 8." />
-      <PlaceholderPanel title="Mint" description="Authorize and mint blue carbon certificates." />
+      <PageHeader
+        title="Mint console"
+        description="Authorize and issue blue carbon certificates on-chain."
+      />
+      <PlaceholderPanel
+        title="Mint"
+        description="Select a verified project and tCO₂e amount to mint credits via the blockchain module."
+      />
     </DashboardShell>
   );
 }

@@ -11,12 +11,12 @@ export default function OnboardingPage() {
       <main className="container flex-1 py-12">
         <PageHeader
           eyebrow="Setup"
-          title="Onboarding"
-          description="Complete profile, organization, and wallet binding (Phase 2)."
+          title="Complete your profile"
+          description="Finish setting up your account — organisation details and wallet binding."
         />
         <PlaceholderPanel
           title="Onboarding steps"
-          description="Profile → organization → wallet connect."
+          description="Profile → organisation → wallet connect. Complete each step to unlock your workspace."
         />
       </main>
       <PublicFooter />

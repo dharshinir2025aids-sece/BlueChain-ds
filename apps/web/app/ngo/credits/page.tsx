@@ -7,8 +7,14 @@ export const metadata = { title: "NGO Credits" };
 export default function NgoCreditsPage() {
   return (
     <DashboardShell title="NGO Console" roleLabel="NGO Manager" nav={ngoNav}>
-      <PageHeader title="Credit portfolio" description="Organization-issued blue carbon credits." />
-      <PlaceholderPanel title="Credits" description="Minted credit inventory will appear after Phase 8." />
+      <PageHeader
+        title="Credit portfolio"
+        description="Blue carbon credits issued for your organisation's verified projects."
+      />
+      <PlaceholderPanel
+        title="Credits"
+        description="Minted credit inventory linked to your verified monitoring reports."
+      />
     </DashboardShell>
   );
 }

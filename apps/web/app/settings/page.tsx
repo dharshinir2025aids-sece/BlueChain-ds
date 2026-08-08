@@ -12,12 +12,12 @@ export default function SettingsPage() {
       <main className="container flex-1 py-12">
         <PageHeader
           title="Settings"
-          description="Account preferences and appearance."
+          description="Account preferences, appearance, and security."
           action={<ThemeToggle />}
         />
         <PlaceholderPanel
           title="Account"
-          description="Profile editing and password change arrive in Phase 2."
+          description="Profile editing, password change, and notification preferences."
         />
       </main>
       <PublicFooter />

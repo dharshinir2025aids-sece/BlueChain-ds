@@ -7,8 +7,14 @@ export const metadata = { title: "Reports" };
 export default function NgoReportsPage() {
   return (
     <DashboardShell title="NGO Console" roleLabel="NGO Manager" nav={ngoNav}>
-      <PageHeader title="Monitoring reports" description="Compile and submit MRV reports." />
-      <PlaceholderPanel title="Reports" description="Report list and status badges will appear here." />
+      <PageHeader
+        title="Monitoring reports"
+        description="Compile, submit, and track MRV monitoring reports for your projects."
+      />
+      <PlaceholderPanel
+        title="Reports"
+        description="Report list with status indicators — draft, submitted, in verification, and approved."
+      />
     </DashboardShell>
   );
 }

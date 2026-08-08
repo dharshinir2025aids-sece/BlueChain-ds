@@ -7,8 +7,14 @@ export const metadata = { title: "Portfolio" };
 export default function BuyerPortfolioPage() {
   return (
     <DashboardShell title="Buyer Portal" roleLabel="Corporate Buyer" nav={buyerNav}>
-      <PageHeader title="Portfolio" description="Owned credit inventory." />
-      <PlaceholderPanel title="Holdings" description="Token holdings synced from chain/DB." />
+      <PageHeader
+        title="Portfolio"
+        description="Your verified blue carbon credit holdings and transfer history."
+      />
+      <PlaceholderPanel
+        title="Holdings"
+        description="Token holdings with vintage year, ecosystem type, and on-chain provenance."
+      />
     </DashboardShell>
   );
 }
