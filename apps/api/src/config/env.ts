@@ -12,6 +12,14 @@ const envSchema = z.object({
     ),
   JWT_SECRET: z.string().default("dev-only-change-me"),
   JWT_EXPIRES_IN: z.string().default("7d"),
+  // ─── Blockchain ────────────────────────────────────────────────────────────
+  BLOCKCHAIN_NETWORK: z.string().default("polygon-amoy"),
+  BLOCKCHAIN_RPC_URL: z
+    .string()
+    .default("https://rpc-amoy.polygon.technology"),
+  REGISTRY_CONTRACT_ADDRESS: z.string().default(""),
+  CREDIT_CONTRACT_ADDRESS: z.string().default(""),
+  RETIREMENT_CONTRACT_ADDRESS: z.string().default(""),
 });
 
 export const env = envSchema.parse(process.env);
