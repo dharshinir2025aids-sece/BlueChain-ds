@@ -7,8 +7,14 @@ export const metadata = { title: "Uploads" };
 export default function FieldUploadsPage() {
   return (
     <DashboardShell title="Field Workspace" roleLabel="Field Worker" nav={fieldNav}>
-      <PageHeader title="Upload queue" description="Media sync queue placeholder." />
-      <PlaceholderPanel title="Uploads" description="Pending and completed IPFS uploads will list here." />
+      <PageHeader
+        title="Upload queue"
+        description="Media evidence pending sync to IPFS from your field device."
+      />
+      <PlaceholderPanel
+        title="Uploads"
+        description="Pending and completed IPFS uploads with CID confirmation status."
+      />
     </DashboardShell>
   );
 }

@@ -9,8 +9,14 @@ export default function WalletSettingsPage() {
     <div className="flex min-h-screen flex-col">
       <PublicHeader />
       <main className="container flex-1 py-12">
-        <PageHeader title="Wallet" description="Bound wallet address management." />
-        <PlaceholderPanel title="Wallet" description="Bind / unbind MetaMask in later phases." />
+        <PageHeader
+          title="Wallet"
+          description="Bind or update the MetaMask wallet address linked to your account."
+        />
+        <PlaceholderPanel
+          title="Wallet"
+          description="Connect or unbind a MetaMask wallet for on-chain credit operations."
+        />
       </main>
       <PublicFooter />
     </div>

@@ -7,8 +7,14 @@ export const metadata = { title: "Admin credits" };
 export default function AdminCreditsPage() {
   return (
     <DashboardShell title="National Registry" roleLabel="NCCR Admin" nav={adminNav}>
-      <PageHeader title="Credit supply" description="National credit inventory controls." />
-      <PlaceholderPanel title="Credits" description="Minted / retired supply tables." />
+      <PageHeader
+        title="Credit supply"
+        description="National blue carbon credit inventory — minted, transferred, and retired."
+      />
+      <PlaceholderPanel
+        title="Credits"
+        description="Minted and retired supply tables linked to the blockchain module."
+      />
     </DashboardShell>
   );
 }

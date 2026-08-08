@@ -7,8 +7,14 @@ export const metadata = { title: "Verification queue" };
 export default function VerifierQueuePage() {
   return (
     <DashboardShell title="Verifier Desk" roleLabel="Independent Verifier" nav={verifierNav}>
-      <PageHeader title="Pending packages" description="Verification queue list shell." />
-      <PlaceholderPanel title="Queue" description="Assignable packages will list here." />
+      <PageHeader
+        title="Pending packages"
+        description="Evidence packages awaiting independent verification review."
+      />
+      <PlaceholderPanel
+        title="Queue"
+        description="Assignable verification packages ordered by priority and submission date."
+      />
     </DashboardShell>
   );
 }

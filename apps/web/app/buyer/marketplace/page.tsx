@@ -7,8 +7,14 @@ export const metadata = { title: "Marketplace" };
 export default function BuyerMarketplacePage() {
   return (
     <DashboardShell title="Buyer Portal" roleLabel="Corporate Buyer" nav={buyerNav}>
-      <PageHeader title="Marketplace" description="Available blue carbon credits." />
-      <PlaceholderPanel title="Listings" description="Marketplace cards arrive in Phase 9." />
+      <PageHeader
+        title="Marketplace"
+        description="Browse available verified blue carbon credits from coastal restoration projects."
+      />
+      <PlaceholderPanel
+        title="Listings"
+        description="Credit listings with ecosystem type, vintage year, price, and project details."
+      />
     </DashboardShell>
   );
 }

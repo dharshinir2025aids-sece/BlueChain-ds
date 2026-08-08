@@ -7,8 +7,14 @@ export const metadata = { title: "Retire credits" };
 export default function BuyerRetirePage() {
   return (
     <DashboardShell title="Buyer Portal" roleLabel="Corporate Buyer" nav={buyerNav}>
-      <PageHeader title="Retire credits" description="Irreversible retirement for ESG claims." />
-      <PlaceholderPanel title="Retirement form" description="On-chain retire flow in Phase 8–9." />
+      <PageHeader
+        title="Retire credits"
+        description="Irreversibly retire credits and generate ESG retirement certificates."
+      />
+      <PlaceholderPanel
+        title="Retirement form"
+        description="Select credits, enter a retirement reason, and trigger the on-chain retirement."
+      />
     </DashboardShell>
   );
 }

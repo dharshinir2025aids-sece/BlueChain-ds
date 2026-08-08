@@ -7,8 +7,14 @@ export const metadata = { title: "System" };
 export default function AdminSystemPage() {
   return (
     <DashboardShell title="National Registry" roleLabel="NCCR Admin" nav={adminNav}>
-      <PageHeader title="System health" description="API, AI, IPFS, and chain health indicators." />
-      <PlaceholderPanel title="Health" description="Service status cards will poll live endpoints." />
+      <PageHeader
+        title="System health"
+        description="Live status of the API, AI service, IPFS provider, and blockchain node."
+      />
+      <PlaceholderPanel
+        title="Health"
+        description="Service status cards polling live endpoints for API, AI, IPFS, and chain."
+      />
     </DashboardShell>
   );
 }

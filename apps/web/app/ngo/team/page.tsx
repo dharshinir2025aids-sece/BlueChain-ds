@@ -7,8 +7,14 @@ export const metadata = { title: "Team" };
 export default function NgoTeamPage() {
   return (
     <DashboardShell title="NGO Console" roleLabel="NGO Manager" nav={ngoNav}>
-      <PageHeader title="Field team" description="Assign field workers to projects." />
-      <PlaceholderPanel title="Team roster" description="Member management arrives with auth in Phase 2." />
+      <PageHeader
+        title="Field team"
+        description="Manage field workers and their project assignments."
+      />
+      <PlaceholderPanel
+        title="Team roster"
+        description="Invite members, assign roles, and manage project access."
+      />
     </DashboardShell>
   );
 }
