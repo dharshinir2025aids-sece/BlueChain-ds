@@ -8,10 +8,9 @@ import { prisma } from "../../config/prisma";
 
 export const publicRouter: RouterType = Router();
 
-// ─── GET /v1/public/projects ─────────────────────────────────────────────────
+// ─── GET /v1/public/projects
 // Paginated list of projects with organisation summary.
 // Filters: status, ecosystemType, stateCode, search (title contains)
-
 publicRouter.get(
   "/projects",
   asyncHandler(async (req, res) => {
@@ -22,13 +21,11 @@ publicRouter.get(
     const stateCode = req.query.stateCode as string | undefined;
     const search = req.query.search as string | undefined;
 
-    const where = {
+    const where: any = {
       ...(status && { status: status as never }),
       ...(ecosystemType && { ecosystemType: ecosystemType as never }),
       ...(stateCode && { stateCode }),
-      ...(search && {
-        title: { contains: search, mode: "insensitive" as const },
-      }),
+      ...(search && { title: { contains: search, mode: "insensitive" as const } }),
     };
 
     const [items, total] = await prisma.$transaction([
@@ -45,12 +42,8 @@ publicRouter.get(
           methodology: true,
           startDate: true,
           createdAt: true,
-          organization: {
-            select: { id: true, name: true, type: true },
-          },
-          _count: {
-            select: { plots: true, reports: true, credits: true },
-          },
+          organization: { select: { id: true, name: true, type: true } },
+          _count: { select: { plots: true, reports: true, credits: true } },
         },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
@@ -63,9 +56,8 @@ publicRouter.get(
   }),
 );
 
-// ─── GET /v1/public/projects/:id ─────────────────────────────────────────────
+// ─── GET /v1/public/projects/:id
 // Single project detail — public-safe fields only.
-
 publicRouter.get(
   "/projects/:id",
   asyncHandler(async (req, res) => {
@@ -84,34 +76,16 @@ publicRouter.get(
         methodology: true,
         startDate: true,
         createdAt: true,
-        organization: {
-          select: { id: true, name: true, type: true },
-        },
-        _count: {
-          select: { plots: true, reports: true, credits: true },
-        },
+        organization: { select: { id: true, name: true, type: true } },
+        _count: { select: { plots: true, reports: true, credits: true } },
         reports: {
           where: { status: "APPROVED" },
-          select: {
-            id: true,
-            periodStart: true,
-            periodEnd: true,
-            status: true,
-            ipfsCid: true,
-            contentHash: true,
-          },
+          select: { id: true, periodStart: true, periodEnd: true, status: true, ipfsCid: true, contentHash: true },
           orderBy: { createdAt: "desc" },
           take: 5,
         },
         credits: {
-          select: {
-            id: true,
-            amounttCO2e: true,
-            vintageYear: true,
-            status: true,
-            tokenId: true,
-            txMint: true,
-          },
+          select: { id: true, amounttCO2e: true, vintageYear: true, status: true, tokenId: true, txMint: true },
           orderBy: { createdAt: "desc" },
           take: 10,
         },
@@ -119,10 +93,7 @@ publicRouter.get(
     });
 
     if (!project) {
-      res.status(404).json({
-        success: false,
-        error: { code: "PROJECT_NOT_FOUND", message: "Project not found" },
-      });
+      res.status(404).json({ success: false, error: { code: "PROJECT_NOT_FOUND", message: "Project not found" } });
       return;
     }
 
@@ -130,20 +101,12 @@ publicRouter.get(
   }),
 );
 
-// ─── GET /v1/public/stats ─────────────────────────────────────────────────────
+// ─── GET /v1/public/stats
 // Aggregate registry statistics for the public dashboard.
-
 publicRouter.get(
   "/stats",
   asyncHandler(async (_req, res) => {
-    const [
-      totalProjects,
-      verifiedProjects,
-      activeProjects,
-      totalCredits,
-      mintedCredits,
-      retiredCredits,
-    ] = await prisma.$transaction([
+    const [totalProjects, verifiedProjects, activeProjects, totalCredits, mintedCredits, retiredCredits] = await prisma.$transaction([
       prisma.project.count(),
       prisma.project.count({ where: { status: "VERIFIED" } }),
       prisma.project.count({ where: { status: "ACTIVE" } }),
@@ -152,9 +115,7 @@ publicRouter.get(
       prisma.carbonCredit.count({ where: { status: "RETIRED" } }),
     ]);
 
-    const tco2e = await prisma.carbonCredit.aggregate({
-      _sum: { amounttCO2e: true },
-    });
+    const tco2e = await prisma.carbonCredit.aggregate({ _sum: { amounttCO2e: true } });
 
     res.status(200).json({
       success: true,
@@ -169,3 +130,5 @@ publicRouter.get(
     });
   }),
 );
+
+export default publicRouter;

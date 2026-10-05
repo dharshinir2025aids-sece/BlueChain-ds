@@ -138,6 +138,22 @@ export type PublicProject = {
     reports: number;
     credits: number;
   };
+  reports?: Array<{
+    id: string;
+    periodStart: string | null;
+    periodEnd: string | null;
+    status: string;
+    ipfsCid?: string | null;
+    contentHash?: string | null;
+  }>;
+  credits?: Array<{
+    id: string;
+    amounttCO2e: number;
+    vintageYear?: number | null;
+    status?: string | null;
+    tokenId?: string | null;
+    txMint?: string | null;
+  }>;
 };
 
 /**
