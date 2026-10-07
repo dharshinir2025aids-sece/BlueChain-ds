@@ -251,3 +251,382 @@ export const publicApi = {
   stats: () =>
     request<PublicStats>("/public/stats"),
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTHENTICATED API CLIENTS
+// All functions below require a JWT token obtained from useAuth().token
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Shared paginated list wrapper ───────────────────────────────────────────
+
+export interface PaginatedList<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+// ─── Project types ────────────────────────────────────────────────────────────
+
+export interface Project {
+  id: string;
+  orgId: string;
+  title: string;
+  description: string | null;
+  ecosystemType: string;
+  status: string;
+  methodology: string | null;
+  areaHa: number;
+  stateCode: string | null;
+  startDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+  organization: { id: string; name: string; type: string };
+  _count: { plots: number; reports: number; credits: number };
+}
+
+export interface CreateProjectInput {
+  title: string;
+  orgId: string;
+  ecosystemType: string;
+  description?: string;
+  methodology?: string;
+  areaHa?: number;
+  startDate?: string;
+  stateCode?: string;
+}
+
+/**
+ * Authenticated project API — wraps /v1/projects
+ */
+export const projectsApi = {
+  list: (
+    token: string,
+    params?: {
+      status?: string;
+      ecosystemType?: string;
+      orgId?: string;
+      stateCode?: string;
+      page?: number;
+      limit?: number;
+    },
+  ) => {
+    const q = new URLSearchParams();
+    if (params?.status) q.set("status", params.status);
+    if (params?.ecosystemType) q.set("ecosystemType", params.ecosystemType);
+    if (params?.orgId) q.set("orgId", params.orgId);
+    if (params?.stateCode) q.set("stateCode", params.stateCode);
+    if (params?.page) q.set("page", String(params.page));
+    if (params?.limit) q.set("limit", String(params.limit));
+    const suffix = q.toString() ? `?${q.toString()}` : "";
+    return request<PaginatedList<Project>>(`/projects${suffix}`, { token });
+  },
+
+  get: (token: string, id: string) =>
+    request<Project>(`/projects/${id}`, { token }),
+
+  create: (token: string, body: CreateProjectInput) =>
+    request<Project>("/projects", { method: "POST", body, token }),
+
+  update: (token: string, id: string, body: Partial<CreateProjectInput> & { status?: string }) =>
+    request<Project>(`/projects/${id}`, { method: "PUT", body, token }),
+
+  delete: (token: string, id: string) =>
+    request<void>(`/projects/${id}`, { method: "DELETE", token }),
+};
+
+// ─── Monitoring report types ──────────────────────────────────────────────────
+
+export interface MonitoringReport {
+  id: string;
+  projectId: string;
+  periodStart: string;
+  periodEnd: string;
+  status: string;
+  summaryJson: Record<string, unknown> | null;
+  ipfsCid: string | null;
+  contentHash: string | null;
+  submittedBy: string;
+  createdAt: string;
+  updatedAt: string;
+  project: { id: string; title: string; orgId: string };
+  submitter: { id: string; name: string; email: string };
+  _count: { media: number };
+}
+
+export interface CreateReportInput {
+  projectId: string;
+  periodStart: string;
+  periodEnd: string;
+  summaryJson?: Record<string, unknown>;
+  ipfsCid?: string;
+  contentHash?: string;
+}
+
+/**
+ * Authenticated monitoring-report API — wraps /v1/monitoring-reports
+ */
+export const reportsApi = {
+  list: (
+    token: string,
+    params?: {
+      projectId?: string;
+      status?: string;
+      page?: number;
+      limit?: number;
+    },
+  ) => {
+    const q = new URLSearchParams();
+    if (params?.projectId) q.set("projectId", params.projectId);
+    if (params?.status) q.set("status", params.status);
+    if (params?.page) q.set("page", String(params.page));
+    if (params?.limit) q.set("limit", String(params.limit));
+    const suffix = q.toString() ? `?${q.toString()}` : "";
+    return request<PaginatedList<MonitoringReport>>(
+      `/monitoring-reports${suffix}`,
+      { token },
+    );
+  },
+
+  get: (token: string, id: string) =>
+    request<MonitoringReport>(`/monitoring-reports/${id}`, { token }),
+
+  create: (token: string, body: CreateReportInput) =>
+    request<MonitoringReport>("/monitoring-reports", {
+      method: "POST",
+      body,
+      token,
+    }),
+
+  update: (token: string, id: string, body: { status?: string; periodStart?: string; periodEnd?: string; summaryJson?: Record<string, unknown>; ipfsCid?: string; contentHash?: string }) =>
+    request<MonitoringReport>(`/monitoring-reports/${id}`, {
+      method: "PUT",
+      body,
+      token,
+    }),
+
+  delete: (token: string, id: string) =>
+    request<void>(`/monitoring-reports/${id}`, { method: "DELETE", token }),
+};
+
+// ─── Carbon credit types ──────────────────────────────────────────────────────
+
+export interface CarbonCredit {
+  id: string;
+  projectId: string;
+  tokenId: string | null;
+  amounttCO2e: number;
+  vintageYear: number;
+  status: string;
+  ownerUserId: string | null;
+  txMint: string | null;
+  txRetire: string | null;
+  ipfsCid: string | null;
+  createdAt: string;
+  updatedAt: string;
+  project: { id: string; title: string; orgId: string };
+  owner: { id: string; name: string; email: string } | null;
+  _count: { transfers: number };
+}
+
+/**
+ * Authenticated credits API — wraps /v1/blockchain/credits
+ */
+export const creditsApi = {
+  list: (
+    token: string,
+    params?: {
+      projectId?: string;
+      status?: string;
+      ownerUserId?: string;
+      page?: number;
+      limit?: number;
+    },
+  ) => {
+    const q = new URLSearchParams();
+    if (params?.projectId) q.set("projectId", params.projectId);
+    if (params?.status) q.set("status", params.status);
+    if (params?.ownerUserId) q.set("ownerUserId", params.ownerUserId);
+    if (params?.page) q.set("page", String(params.page));
+    if (params?.limit) q.set("limit", String(params.limit));
+    const suffix = q.toString() ? `?${q.toString()}` : "";
+    return request<PaginatedList<CarbonCredit>>(
+      `/blockchain/credits${suffix}`,
+      { token },
+    );
+  },
+
+  get: (token: string, id: string) =>
+    request<CarbonCredit>(`/blockchain/credits/${id}`, { token }),
+
+  mint: (
+    token: string,
+    body: {
+      projectId: string;
+      amounttCO2e: number;
+      vintageYear: number;
+      tokenId?: string;
+      txMint?: string;
+      ipfsCid?: string;
+    },
+  ) =>
+    request<CarbonCredit>("/blockchain/credits", {
+      method: "POST",
+      body,
+      token,
+    }),
+
+  retire: (
+    token: string,
+    id: string,
+    body: { reason?: string; txHash?: string },
+  ) =>
+    request<unknown>(`/blockchain/credits/${id}/retire`, {
+      method: "POST",
+      body,
+      token,
+    }),
+};
+
+// ─── Marketplace types ────────────────────────────────────────────────────────
+
+export interface MarketplaceListing {
+  id: string;
+  creditId: string;
+  sellerId: string;
+  pricePerTonne: number;
+  notes: string | null;
+  status: "ACTIVE" | "CANCELLED" | "SOLD";
+  createdAt: string;
+  updatedAt: string;
+  credit: {
+    id: string;
+    amounttCO2e: number;
+    vintageYear: number;
+    status: string;
+    tokenId: string | null;
+    ipfsCid: string | null;
+    project: { id: string; title: string; ecosystemType: string; orgId: string };
+  };
+  seller: { id: string; name: string; email: string };
+}
+
+export interface PurchaseResult {
+  listing: MarketplaceListing;
+  transfer: {
+    id: string;
+    creditId: string;
+    fromUserId: string;
+    toUserId: string;
+    amount: number;
+    createdAt: string;
+  };
+}
+
+/**
+ * Authenticated marketplace API — wraps /v1/marketplace
+ */
+export const marketplaceApi = {
+  listListings: (
+    token: string,
+    params?: {
+      ecosystemType?: string;
+      vintageYear?: number;
+      minPrice?: number;
+      maxPrice?: number;
+      projectId?: string;
+      page?: number;
+      limit?: number;
+    },
+  ) => {
+    const q = new URLSearchParams();
+    if (params?.ecosystemType) q.set("ecosystemType", params.ecosystemType);
+    if (params?.vintageYear) q.set("vintageYear", String(params.vintageYear));
+    if (params?.minPrice) q.set("minPrice", String(params.minPrice));
+    if (params?.maxPrice) q.set("maxPrice", String(params.maxPrice));
+    if (params?.projectId) q.set("projectId", params.projectId);
+    if (params?.page) q.set("page", String(params.page));
+    if (params?.limit) q.set("limit", String(params.limit));
+    const suffix = q.toString() ? `?${q.toString()}` : "";
+    return request<PaginatedList<MarketplaceListing>>(
+      `/marketplace/listings${suffix}`,
+      { token },
+    );
+  },
+
+  getListing: (token: string, id: string) =>
+    request<MarketplaceListing>(`/marketplace/listings/${id}`, { token }),
+
+  purchase: (token: string, id: string, body: { quantity: number; notes?: string }) =>
+    request<PurchaseResult>(`/marketplace/listings/${id}/purchase`, {
+      method: "POST",
+      body,
+      token,
+    }),
+
+  cancelListing: (token: string, id: string) =>
+    request<void>(`/marketplace/listings/${id}`, {
+      method: "DELETE",
+      token,
+    }),
+};
+
+// ─── Verification package types ───────────────────────────────────────────────
+
+export interface VerificationPackage {
+  id: string;
+  reportId: string;
+  verifierId: string | null;
+  status: string;
+  checklistJson: Record<string, unknown> | null;
+  decision: string | null;
+  comments: string | null;
+  decidedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  report: {
+    id: string;
+    projectId: string;
+    periodStart: string;
+    periodEnd: string;
+    status: string;
+    project: { id: string; title: string; orgId: string };
+    submitter: { id: string; name: string; email: string };
+  };
+  verifier: { id: string; name: string; email: string } | null;
+}
+
+/**
+ * Verification API — wraps /v1/verification
+ */
+export const verificationApi = {
+  list: (
+    token: string,
+    params?: { status?: string; verifierId?: string; page?: number; limit?: number },
+  ) => {
+    const q = new URLSearchParams();
+    if (params?.status) q.set("status", params.status);
+    if (params?.verifierId) q.set("verifierId", params.verifierId);
+    if (params?.page) q.set("page", String(params.page));
+    if (params?.limit) q.set("limit", String(params.limit));
+    const suffix = q.toString() ? `?${q.toString()}` : "";
+    return request<PaginatedList<VerificationPackage>>(
+      `/verification${suffix}`,
+      { token },
+    );
+  },
+
+  get: (token: string, id: string) =>
+    request<VerificationPackage>(`/verification/${id}`, { token }),
+
+  decide: (
+    token: string,
+    id: string,
+    body: { decision: "APPROVED" | "REJECTED" | "CHANGES_REQUESTED"; comments?: string },
+  ) =>
+    request<VerificationPackage>(`/verification/${id}/decide`, {
+      method: "POST",
+      body,
+      token,
+    }),
+};
