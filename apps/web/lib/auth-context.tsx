@@ -26,8 +26,12 @@ function persistToken(token: string | null) {
   if (typeof window === "undefined") return;
   if (token) {
     window.localStorage.setItem(TOKEN_KEY, token);
+    // Set a short-lived cookie so Next.js middleware can detect auth state
+    // for redirect purposes. This is NOT the JWT — just a presence indicator.
+    document.cookie = "bluechain_auth=1; path=/; SameSite=Lax; max-age=604800";
   } else {
     window.localStorage.removeItem(TOKEN_KEY);
+    document.cookie = "bluechain_auth=; path=/; SameSite=Lax; max-age=0";
   }
 }
 

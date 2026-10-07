@@ -15,6 +15,7 @@ import { monitoringReportRouter } from "./modules/monitoring-report/monitoringRe
 import { blockchainRouter } from "./modules/blockchain/blockchain.router";
 import { marketplaceRouter } from "./modules/marketplace/marketplace.router";
 import { publicRouter } from "./modules/public/public.router";
+import { verificationRouter } from "./modules/verification/verification.router";
 
 const app: Express = express();
 
@@ -48,6 +49,7 @@ app.use("/v1/monitoring-reports", monitoringReportRouter);
 app.use("/v1/blockchain", blockchainRouter);
 app.use("/v1/marketplace", marketplaceRouter);
 app.use("/v1/public", publicRouter);
+app.use("/v1/verification", verificationRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

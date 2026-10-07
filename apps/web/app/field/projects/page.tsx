@@ -1,20 +1,147 @@
-import { PageHeader, PlaceholderPanel } from "@/components/page-header";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { fieldNav } from "@/lib/site";
+"use client";
 
-export const metadata = { title: "Field Projects" };
+import * as React from "react";
+import Link from "next/link";
+import { AlertCircle, ArrowRight, Leaf, Loader2, MapPin, TreePine } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { PageHeader } from "@/components/page-header";
+import { useAuth } from "@/lib/auth-context";
+import { projectsApi, type Project, ApiError } from "@/lib/api";
+import { fieldNav } from "@/lib/site";
+import { cn } from "@/lib/utils";
+
+const ECOSYSTEM_ICON: Record<string, string> = { MANGROVE: "🌿", SEAGRASS: "🌊", SALT_MARSH: "🦢" };
+const ECOSYSTEM_LABEL: Record<string, string> = { MANGROVE: "Mangrove", SEAGRASS: "Seagrass", SALT_MARSH: "Salt Marsh" };
 
 export default function FieldProjectsPage() {
+  const { token } = useAuth();
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [total, setTotal] = React.useState(0);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const load = React.useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    try {
+      // Backend scopes FIELD_WORKER to their assigned projects automatically
+      const result = await projectsApi.list(token, { limit: 50 });
+      setProjects(result.items);
+      setTotal(result.total);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  React.useEffect(() => { void load(); }, [load]);
+
   return (
     <DashboardShell title="Field Workspace" roleLabel="Field Worker" nav={fieldNav}>
       <PageHeader
         title="Assigned projects"
         description="Projects and plots assigned to you for monitoring and observation."
       />
-      <PlaceholderPanel
-        title="Project list"
-        description="Your assigned projects with plot counts and pending observation tasks."
-      />
+
+      {loading && (
+        <div className="flex min-h-[14rem] items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {!loading && error && (
+        <Card className="glass-panel border-destructive/30">
+          <CardContent className="flex items-start gap-3 py-6">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+            <div>
+              <p className="font-medium text-sm">Unable to load projects</p>
+              <p className="text-xs text-muted-foreground mt-1">{error}</p>
+              <Button size="sm" variant="outline" className="mt-3 rounded-full" onClick={load}>Retry</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!loading && !error && projects.length === 0 && (
+        <Card className="glass-panel">
+          <CardContent className="flex flex-col items-center gap-4 py-14 text-center">
+            <TreePine className="h-10 w-10 text-muted-foreground/40" />
+            <div>
+              <p className="font-semibold">No projects assigned</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Your NGO manager will assign you to projects once they are created.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!loading && !error && projects.length > 0 && (
+        <>
+          <p className="mb-5 text-sm text-muted-foreground">
+            {total.toLocaleString()} project{total !== 1 ? "s" : ""} accessible
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {projects.map((project) => (
+              <Link key={project.id} href={`/registry/${project.id}`} className="group block">
+                <Card className="glass-panel h-full hover-lift hover:border-primary/30">
+                  <CardHeader className="pb-3">
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <span className="text-2xl">{ECOSYSTEM_ICON[project.ecosystemType] ?? "🌱"}</span>
+                      <Badge
+                        variant={["VERIFIED","ACTIVE"].includes(project.status) ? "success" : project.status === "DRAFT" ? "outline" : "warning"}
+                        className="rounded-full text-[11px]"
+                      >
+                        {project.status.replace(/_/g, " ")}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-[15px] leading-snug group-hover:text-primary transition-colors">
+                      {project.title}
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      {project.organization?.name}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                      <div>
+                        <dt className="text-muted-foreground">Ecosystem</dt>
+                        <dd className="font-medium">{ECOSYSTEM_LABEL[project.ecosystemType] ?? project.ecosystemType}</dd>
+                      </div>
+                      {project.stateCode && (
+                        <div>
+                          <dt className="text-muted-foreground flex items-center gap-1"><MapPin className="h-3 w-3" />State</dt>
+                          <dd className="font-medium">{project.stateCode}</dd>
+                        </div>
+                      )}
+                      <div>
+                        <dt className="text-muted-foreground flex items-center gap-1"><Leaf className="h-3 w-3" />Plots</dt>
+                        <dd className="font-medium">{project._count.plots}</dd>
+                      </div>
+                    </dl>
+                    <div className="mt-3 flex justify-end">
+                      <span className={cn("inline-flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100")}>
+                        View <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </DashboardShell>
   );
 }
